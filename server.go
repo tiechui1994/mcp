@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -94,10 +96,20 @@ func NewMCPServer() *server.MCPServer {
 	return mcpServer
 }
 
+var (
+	port    int
+	address string
+)
+
 func main() {
+	flag.IntVar(&port, "port", 8000, "sse server port")
+	flag.StringVar(&address, "ip", "localhost", "server ip address")
+	flag.Parse()
+
 	srv := server.NewStreamableHTTPServer(NewMCPServer(), server.WithHeartbeatInterval(time.Second*30))
 	go func() {
-		if err := srv.Start(":8000"); err != nil {
+		addr := fmt.Sprintf("%v:%v", address, port)
+		if err := srv.Start(addr); err != nil {
 			log.Fatalf("start error: %v", err)
 		}
 	}()
